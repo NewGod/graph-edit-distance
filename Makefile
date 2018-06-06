@@ -12,7 +12,7 @@ SRCDIR = ./src
 DEPS = $(wildcard $(IDIR)/*.h)
 SCRIPTS = $(wildcard $(SCRIPT_DIR)/*.cpp)
 
-TARGETS = $(patsubst %.cpp ,%, $(SCRIPTS))
+TARGETS = $(patsubst %.cpp, %, $(SCRIPTS))
 
 debug: CXXFLAGS += -DDEBUG -g
 

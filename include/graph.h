@@ -10,18 +10,20 @@
 using namespace std;
 template<class EdgeAttribute> 
 class Edge{
-    Edge *next;
+    public:
     int from, to; 
-    int id;
+    Edge *next;
     EdgeAttribute attr;
+    int id;
     Edge(int from, int to, Edge* next, int id, EdgeAttribute attr):
         from(from), to(to), next(next), attr(attr), id(id){};
 };
 template<class NodeAttribute, class EdgeAttribute>
 class Node{
-    Edge<EdgeAttribute> *edges;
+    public:
     int id; 
     NodeAttribute attr;
+    Edge<EdgeAttribute> *edges;
     Node(int id, NodeAttribute attr): id(id), attr(attr), edges(0){}
     ~Node(){
         Edge<EdgeAttribute> *iter = edges;
@@ -31,7 +33,7 @@ class Node{
             delete tmp;
         }
     }
-    Edge<EdgeAttribute> addedge(int node_id, EdgeAttribute attr, int edge_id){
+    Edge<EdgeAttribute>* addedge(int node_id, EdgeAttribute attr, int edge_id){
         return edges = new Edge<EdgeAttribute>(id, node_id, edges, edge_id, attr);
     }
     int unconnect(int to){
@@ -52,6 +54,7 @@ class Node{
 };
 template< class NodeAttribute, class EdgeAttribute> 
 class Graph{
+    public:
     vector<Node<NodeAttribute, EdgeAttribute> *> node;
     int node_num, edge_num;
     Graph(const char * filename){
@@ -75,7 +78,7 @@ class Graph{
                 int from=label.from;
                 int to=label.to;
 
-                link(id_to_index[from], id_to_index[to],label);
+                link(id_to_index[from], id_to_index[to], label);
             }
             elem = elem->NextSiblingElement(); // iteration
         }
@@ -84,7 +87,7 @@ class Graph{
         node.push_back(x);
         node_num ++;
     }
-    void link(int x,int y, Edge<EdgeAttribute> attr){
+    void link(int x,int y, EdgeAttribute attr){
         node[x]->addedge(y, attr, edge_num++);
         node[y]->addedge(x, attr, edge_num++);
     }

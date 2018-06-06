@@ -3,6 +3,8 @@
 #include<iostream>
 #include<algorithm>
 #include<graph.h>
+#include<sstream>
+#include<unistd.h>
 
 using namespace std;
 
@@ -46,30 +48,30 @@ struct Options * parseOptions(int argc, char** argv){
 }
 
 struct EdgeAttribute{
-    int from, to;
+    int from, to, type;
     EdgeAttribute(TiXmlElement *elem){
-        from = stoi((elem->attribute("from")+1));
-        from = stoi((elem->attribute("to")+1));
+        from = stoi((elem->Attribute("from")+1));
+        to = stoi((elem->Attribute("to")+1));
         auto x = elem->FirstChildElement();
-        type = x->attribute("valence");
+        type = stoi(x->GetText());
     }
 };
 struct NodeAttribute{
     int id, type;
     NodeAttribute(TiXmlElement *elem){
-        id = stoi((elem->attribute("id")) + 1);
+        id = stoi((elem->Attribute("id")) + 1);
         auto x = elem->FirstChildElement();
-        type = x->attribute("chem");
+        type = stoi(x->GetText());
     }
 };
 int main(int argc, char **argv){
     struct Options * options = parseOptions(argc, argv);  
-    graph = Graph<NodeAttribute, EdgeAttribute>(options->dataset_file);
+    auto graph = Graph<NodeAttribute, EdgeAttribute>(options->dataset_file.c_str());
     for (auto iter: graph.node){
         printf("Node: %d type %d\n", iter->attr.id, iter->attr.type);
         auto x = iter->edges;
         while (x){
-            print("\t Edge from %d to %d type %d\n",x->attr.from, x->attr.to, x->attr.type);
+            printf("\t Edge from %d to %d type %d\n",x->attr.from, x->attr.to, x->attr.type);
         }
         printf("\n");
     }
