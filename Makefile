@@ -1,8 +1,7 @@
 IDIR = ./include
 
-TINYXML_DIR=../tinyxml
 
-CXXFLAGS = -I $(IDIR) -I$(TINYXML_DIR) -Wall -std=c++11 -O3 
+CXXFLAGS = -I $(IDIR) -Wall -std=c++11 -O3 -ltinyxml
 
 BINDIR = ./bin
 SCRIPT_DIR=./script
@@ -15,6 +14,7 @@ SCRIPTS = $(wildcard $(SCRIPT_DIR)/*.cpp)
 TARGETS = $(patsubst %.cpp, %, $(SCRIPTS))
 
 debug: CXXFLAGS += -DDEBUG -g
+debug: $(TARGETS)
 
 $(TARGETS): $(OBJ) $(SCRIPTS)
 	$(CXX) -o $@ $^ $(CXXFLAGS) 
@@ -22,4 +22,4 @@ $(TARGETS): $(OBJ) $(SCRIPTS)
 .PHONY: clean
 
 clean:
-	rm -f $(ODIR)/*.o *~ core $(IDIR)/*~  $(BINDIR)/*
+	rm -f $(ODIR)/*.o *~ core $(IDIR)/*~  $(BINDIR)/* $(TARGETS)

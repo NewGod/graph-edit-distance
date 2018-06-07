@@ -27,6 +27,10 @@ struct Options{
 
 struct Options * parseOptions(int argc, char** argv){
   struct Options * options = new struct Options();
+  if (argc == 1) {
+      usage(argv[0]);
+      exit(EXIT_FAILURE);
+  }
   options->dataset_file = string(argv[1]);
   int opt;
   stringstream sstream;
@@ -53,7 +57,7 @@ struct EdgeAttribute{
         from = stoi((elem->Attribute("from")+1));
         to = stoi((elem->Attribute("to")+1));
         auto x = elem->FirstChildElement();
-        type = stoi(x->GetText());
+        type = stoi(x->FirstChild()->FirstChild()->Value());
     }
 };
 struct NodeAttribute{
@@ -61,7 +65,7 @@ struct NodeAttribute{
     NodeAttribute(TiXmlElement *elem){
         id = stoi((elem->Attribute("id")) + 1);
         auto x = elem->FirstChildElement();
-        type = stoi(x->GetText());
+        type = stoi(x->FirstChild()->FirstChild()->Value());
     }
 };
 int main(int argc, char **argv){
@@ -72,6 +76,7 @@ int main(int argc, char **argv){
         auto x = iter->edges;
         while (x){
             printf("\t Edge from %d to %d type %d\n",x->attr.from, x->attr.to, x->attr.type);
+            x = x->next;
         }
         printf("\n");
     }
