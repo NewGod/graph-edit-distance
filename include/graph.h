@@ -8,7 +8,32 @@
 
 #include<tinyxml.h>
 using namespace std;
-template<class EdgeAttribute> 
+struct EdgeAttribute{
+    int from, to, type;
+    EdgeAttribute(TiXmlElement *elem){
+        const char *_from = elem->Attribute("from");
+        const char *_to = elem->Attribute("to");
+        if (_from[0] == '_') {
+            _from++;_to++;
+        }
+        from = stoi(_from);
+        to = stoi(_to);
+        auto x = elem->FirstChildElement();
+        type = stoi(x->FirstChild()->FirstChild()->Value());
+    }
+};
+struct NodeAttribute{
+    int id;
+    string type;
+    NodeAttribute(TiXmlElement *elem){
+        const char *_id = elem->Attribute("id");
+        if (_id[0] == '_') _id++;
+        id = stoi(_id);
+        auto x = elem->FirstChildElement();
+        
+        type = x->FirstChild()->FirstChild()->ValueStr();
+    }
+};
 class Edge{
     public:
     int from, to; 
@@ -18,29 +43,29 @@ class Edge{
     Edge(int from, int to, Edge* next, int id, EdgeAttribute attr):
         from(from), to(to), next(next), attr(attr), id(id){};
 };
-template<class NodeAttribute, class EdgeAttribute>
 class Node{
     public:
     int id; 
     NodeAttribute attr;
-    Edge<EdgeAttribute> *edges;
+    Edge *edges;
     Node(int id, NodeAttribute attr): id(id), attr(attr), edges(0){}
     ~Node(){
-        Edge<EdgeAttribute> *iter = edges;
+        Edge *iter = edges;
         while (iter) {
-            Edge<EdgeAttribute> *tmp = iter;
+            Edge *tmp = iter;
             iter = iter->next;
             delete tmp;
         }
     }
-    Edge<EdgeAttribute>* addedge(int node_id, EdgeAttribute attr, int edge_id){
-        return edges = new Edge<EdgeAttribute>(id, node_id, edges, edge_id, attr);
+    Edge* addedge(int node_id, EdgeAttribute attr, int edge_id){
+        return edges = new Edge(id, node_id, edges, edge_id, attr);
     }
     int unconnect(int to){
-        Edge<EdgeAttribute> *iter, *prev = edges;
+        Edge *iter, *prev;
+        iter = prev = edges;
         int edge_id = -1;
         while (iter) {
-            Edge<EdgeAttribute> *tmp = iter;
+            Edge *tmp = iter;
             iter = iter->next;
             if (tmp->to == to){
                 if (tmp == edges) edges = iter;
@@ -52,10 +77,9 @@ class Node{
         return edge_id;
     }
 };
-template< class NodeAttribute, class EdgeAttribute> 
 class Graph{
     public:
-    vector<Node<NodeAttribute, EdgeAttribute> *> node;
+    vector<Node*> node;
     int node_num, edge_num;
     Graph(const char * filename){
         TiXmlDocument doc(filename);
@@ -72,7 +96,7 @@ class Graph{
                 int id = label.id;
 
                 id_to_index[id] = node_num;
-                addnode(new Node<NodeAttribute, EdgeAttribute>(id,label));
+                addnode(new Node(id,label));
             }else if (strcmp(elem->Value(),"edge") == 0){
                 EdgeAttribute label = EdgeAttribute(elem);
                 int from=label.from;
@@ -83,7 +107,7 @@ class Graph{
             elem = elem->NextSiblingElement(); // iteration
         }
     }
-    void addnode(Node<NodeAttribute, EdgeAttribute>* x) {
+    void addnode(Node* x) {
         node.push_back(x);
         node_num ++;
     }
@@ -91,13 +115,13 @@ class Graph{
         node[x]->addedge(y, attr, edge_num++);
         node[y]->addedge(x, attr, edge_num++);
     }
-    void random_shuffle(){
+    void shuffle(){
         int prem[node_num];
         random_shuffle(node.begin(), node.end());
         for (int i = 0; i<node_num; i++) prem[node[i]->id]=i;
         for (int i = 0; i<node_num; i++) {
             node[i]->id = i;
-            auto iter = node->edges;
+            auto iter = node[i]->edges;
             while (iter) {
                 iter->from = prem[iter->from];
                 iter->to = prem[iter->to];

@@ -51,28 +51,11 @@ struct Options * parseOptions(int argc, char** argv){
   return options;
 }
 
-struct EdgeAttribute{
-    int from, to, type;
-    EdgeAttribute(TiXmlElement *elem){
-        from = stoi((elem->Attribute("from")+1));
-        to = stoi((elem->Attribute("to")+1));
-        auto x = elem->FirstChildElement();
-        type = stoi(x->FirstChild()->FirstChild()->Value());
-    }
-};
-struct NodeAttribute{
-    int id, type;
-    NodeAttribute(TiXmlElement *elem){
-        id = stoi((elem->Attribute("id")) + 1);
-        auto x = elem->FirstChildElement();
-        type = stoi(x->FirstChild()->FirstChild()->Value());
-    }
-};
 int main(int argc, char **argv){
     struct Options * options = parseOptions(argc, argv);  
-    auto graph = Graph<NodeAttribute, EdgeAttribute>(options->dataset_file.c_str());
+    auto graph = Graph(options->dataset_file.c_str());
     for (auto iter: graph.node){
-        printf("Node: %d type %d\n", iter->attr.id, iter->attr.type);
+        printf("Node: %d type %s\n", iter->attr.id, iter->attr.type.c_str());
         auto x = iter->edges;
         while (x){
             printf("\t Edge from %d to %d type %d\n",x->attr.from, x->attr.to, x->attr.type);
