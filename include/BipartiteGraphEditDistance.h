@@ -4,7 +4,8 @@
 #include "lsape.h"
 #include "utils.h"
 class CostFunction(){
-    double NSubCost, NInsCost, NDelCost, ESubCost, EDelCost, EInsCost):
+    double NSubCost, NInsCost, NDelCost, ESubCost, EDelCost, EInsCost;
+    public:
     CostFunction(double NSubCost, double NInsCost, double NDelCost,
             double ESubCost, double EDelCost, double EInsCost):
         :NSubCost(NSubCost), NInsCost(NInsCost), NDelCost(NDelCost),
@@ -12,8 +13,8 @@ class CostFunction(){
     {
     }
     double NodeSubstitutionCost(Node *x, Node *y){
-        if (x->attr == y->attr) return NSubCost;
-        else return inf;
+        if (x->attr == y->attr) return 0;
+        else return NSubCost;
     }
     double NodeDeletionCost(){
         return NDelCost;
@@ -28,8 +29,9 @@ class CostFunction(){
         return EDelCost;
     }
     double EdgeSubstitutionCost(Edge* x, Edge* y){
-        double ans = EInsCost + EDelCost;
-        if (x->attr == y->attr) return min(ans, ESubCost);
+        double ans = min(ESubCost, EInsCost + EDelCost);
+        if (x->attr == y->attr) return 0;
+        else return ans;
     }
 }
 double GedFromMapping(Graph* g1, Graph* g2, int* g1_to_g2, int* g2_to_g1, CostFunction* cf){
@@ -80,7 +82,6 @@ double GedFromMapping(Graph* g1, Graph* g2, int* g1_to_g2, int* g2_to_g1, CostFu
     return cost;
 }
 class BipartiteGraphEditDistance{
-    GraphEditDistance *graph_cost;
     CostFunction *cf;
     double SubstitutionCost(Node* v1, Node* v2, Graph* g1, Graph* g2){ 
         double ans = cf->NodeSubstitutionCost(v1, v2);
@@ -131,17 +132,17 @@ class BipartiteGraphEditDistance{
             C[n*(m+1)+j] = this->InsertionCost(g2->node[i], g2);
         C[n*(m+1)+m] = 0;
     }
-    Bipartite_ged(char* filename1, char* filename2, GraphEditDistance* g){ 
-        g1 = new Graph(filename1);
-        g2 = new Graph(filename2);
-        graph_cost = g;
+    public:
+    BipartiteGraphEditDistance(CostFunction* cf):cf(cf){ 
     }
     double getOptimalMapping(Graph *g1, Graph *g2, int* g1_to_g2, int * g2_to_g1) {
         int n = g1->node_num;
         int m = g2->node_num;
+        
+        clock_t t = clock();
         computeCostMatrix(g1, g2);
         LSAPE(C, n+1, m+1).hungarianLSAPE(g1_to_g2, g2_to_g1);
-        return GedFromMapping(g1, g2, g1_to_g2, g2_to_g1);
+        return ((float)t) / CLOCKS_PER_SEC;
     }
 }
 #endif
