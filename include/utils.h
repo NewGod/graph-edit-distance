@@ -1,5 +1,6 @@
 #ifdef __UTILS_H__
 #define __UTILS_H__
+const double inf = 1e100
 template<typename DT> 
 DT* inv(DT* c, int n, int m) {
     DT* T = new DT[n*m];

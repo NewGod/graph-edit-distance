@@ -48,7 +48,8 @@ class Node{
     int id; 
     NodeAttribute attr;
     Edge *edges;
-    Node(int id, NodeAttribute attr): id(id), attr(attr), edges(0){}
+    int degree;
+    Node(int id, NodeAttribute attr): id(id), attr(attr), edges(0), degree(0){}
     ~Node(){
         Edge *iter = edges;
         while (iter) {
@@ -58,6 +59,7 @@ class Node{
         }
     }
     Edge* addedge(int node_id, EdgeAttribute attr, int edge_id){
+        degree++;
         return edges = new Edge(id, node_id, edges, edge_id, attr);
     }
     int unconnect(int to){
@@ -71,6 +73,7 @@ class Node{
                 if (tmp == edges) edges = iter;
                 else prev->next = iter;
                 edge_id = tmp->id;
+                degree --;
                 delete tmp;
             }else prev = tmp;
         }
@@ -114,6 +117,12 @@ class Graph{
     void link(int x,int y, EdgeAttribute attr){
         node[x]->addedge(y, attr, edge_num++);
         node[y]->addedge(x, attr, edge_num++);
+    }
+    Edge* getedge(int x,int y){
+        for (auto iter = node[x]->edges; iter; iter=iter->next){
+            if (iter->to == y) return iter;
+        }
+        return NULL;
     }
     void shuffle(){
         int prem[node_num];
