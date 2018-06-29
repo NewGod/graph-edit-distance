@@ -20,16 +20,22 @@ class EdgeChange:public GraphChange{
 	from_start(from_start_),from_end(from_end_), to_start(to_start_), to_end(to_end_){}
 }
 
-typedef pair< vector<GraphChange*>*, int> opts;
+class opts{
+	public:
+	vector<GraphChange*>* changelist;
+	ínt numChange;
+	int costs;
+	int imagecost;
+}
 
 class myless {
 	public:
 	bool operator()(opts1,opts2) {
-		return opts1.second<opts2.second;
+		return opts1.costs<opts2.second;
 	}
 }
 
-int a_star (){
+int a_star (Graph* g1, Graph* g2){
 	bool found = false;
 	int result = 0;//graph edit distance;
 	priority_queue<opts, vector<opts>, myless> option_set;//a prioity queue that save all the options
@@ -41,14 +47,16 @@ int a_star (){
 	
 	//find the smallest distance
 	while(!found) { 
-		= option_set.top();
+		opts bestopts= option_set.top();
 		option_set.pop();
-		if judgesame(){
+		Graph* gchange = change(g1, bestopts);
+		if judgesame(gchange, g2){
 			found=true;
-			result= ;
+			result=bestopts.second;
 		}
-		else{
-			if( < ) {//the final graph is smaller than the operating graph
+		else {
+			opts newopts;
+			if(bestopts-><g2->numNode ) {//the final graph is smaller than the operating graph
 				for()
 					for()
 						if()
