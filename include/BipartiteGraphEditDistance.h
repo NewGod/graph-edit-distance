@@ -149,6 +149,7 @@ class BipartiteGraphEditDistance{
         clock_t t = clock();
         computeCostMatrix(g1, g2);
         LSAPE(C, n, m).hungarianLSAPE(g1_to_g2, g2_to_g1);
+        t = clock() - t;
         delete[] C;
         return ((float)t) / CLOCKS_PER_SEC;
     }

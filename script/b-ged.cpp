@@ -61,22 +61,26 @@ int main(int argc, char **argv){
     struct Options * options = parseOptions(argc, argv);  
     CostFunction *cf = new CostFunction(options->NodeSubCost,options->NodeDelCost,options->NodeDelCost,options->EdgeSubCost, options->EdgeDelCost, options->EdgeDelCost);
     Graph *g1 = new Graph(options->dataset1_file.c_str());
-    cout<<options->dataset2_file.c_str()<<endl;
     
     Graph *g2 = new Graph(options->dataset2_file.c_str());
+    g1->shuffle(); g2->shuffle(); // randomize
     BipartiteGraphEditDistance *solver = new BipartiteGraphEditDistance(cf);
 
     int n = g1->node_num, m = g2->node_num;
     int* g1_to_g2 = new int[n+1], *g2_to_g1 = new int[m+1];
     double time = solver->getOptimalMapping(g1,g2,g1_to_g2,g2_to_g1);
-    printf("%d %d\n",g1->node_num, g2->node_num);
-
     cout<<"2"<<endl;
     cout<<time<<endl;
+    pair<int,int> s[n];
     for (int i=0;i<n;i++) {
-        if (g1_to_g2[i] != m) cout<<g1_to_g2[i]+1<<' ';
-        else cout<<-1<<endl;
+        int tmp;
+        if (g1_to_g2[i] == m) tmp = -1;
+        else tmp = g2->node[g1_to_g2[i]]->attr.id;
+        s[i] = make_pair(g1->node[i]->attr.id, tmp);
     }
-    
+    sort(s,s+n);
+    for (int i=0;i<n;i++) 
+        printf("%d ", s[i].second);
+    puts("");
     return 0;
 }

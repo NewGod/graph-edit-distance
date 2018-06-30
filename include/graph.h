@@ -141,6 +141,7 @@ class Graph{
             while (iter) {
                 iter->from = prem[iter->from];
                 iter->to = prem[iter->to];
+                iter = iter->next;
             }
         }
     }
