@@ -132,16 +132,14 @@ class Graph{
         return NULL;
     }
     void shuffle(){
-        int prem[node_num];
+        map<int,int> prem;
         random_shuffle(node.begin(), node.end());
         for (int i = 0; i<node_num; i++) prem[node[i]->id]=i;
         for (int i = 0; i<node_num; i++) {
             node[i]->id = i;
-            auto iter = node[i]->edges;
-            while (iter) {
+            for (auto iter = node[i]->edges; iter; iter=iter->next){
                 iter->from = prem[iter->from];
                 iter->to = prem[iter->to];
-                iter = iter->next;
             }
         }
     }
