@@ -82,6 +82,5 @@ int main(int argc, char **argv){
     for (int i=0;i<n;i++) 
         printf("%d ", s[i].second);
     puts("");
-    printf("%lf\n", GedFromMapping(g1,g2,g1_to_g2,g2_to_g1,cf));
     return 0;
 }
