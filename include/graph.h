@@ -21,6 +21,9 @@ struct EdgeAttribute{
         auto x = elem->FirstChildElement();
         type = stoi(x->FirstChild()->FirstChild()->Value());
     }
+    bool operator == (const EdgeAttribute &x) {
+        return x.type == type;
+    }
 };
 struct NodeAttribute{
     int id;
@@ -32,6 +35,9 @@ struct NodeAttribute{
         auto x = elem->FirstChildElement();
         
         type = x->FirstChild()->FirstChild()->ValueStr();
+    }
+    bool operator == (const NodeAttribute &x) {
+        return x.type == type;
     }
 };
 class Edge{
@@ -60,7 +66,8 @@ class Node{
     }
     Edge* addedge(int node_id, EdgeAttribute attr, int edge_id){
         degree++;
-        return edges = new Edge(id, node_id, edges, edge_id, attr);
+        edges = new Edge(id, node_id, edges, edge_id, attr);
+        return edges;
     }
     int unconnect(int to){
         Edge *iter, *prev;
@@ -84,7 +91,7 @@ class Graph{
     public:
     vector<Node*> node;
     int node_num, edge_num;
-    Graph(const char * filename){
+    Graph(const char * filename):node_num(0), edge_num(0){
         TiXmlDocument doc(filename);
         if (!doc.LoadFile()){
             cerr << "Error while loading file" << endl;

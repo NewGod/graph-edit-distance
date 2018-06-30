@@ -1,32 +1,34 @@
-#ifdef __LSAPE__
-#define __LSAPE__
+#ifndef __LSAPE_H_
+#define __LSAPE_H_
 // x[cols][rows]
 #include "utils.h"
+#include<cstdio>
+#include<algorithm>
 class Assign{
     int n, m;
     int *rho, *varrho;
     double *u, *v;
     const double *C;// a array with (n+1)x(m+1) 
-    double get(i,j){
+    double get(int i,int j){
         return C[i*(m+1)+j];
     }
-    int AugmentCol(const int &k, const int* pred, int& zi,int & zj) {
+    void AugmentCol(const int &k, int* const pred, int& zi,int & zj) {
         int U[n];
         int SV[n];
-        int Uptr = 0, LUptr = -1, *SUptr = -1, SVcnt=0;
+        int Uptr = -1, LUptr = -1, SUptr = -1, SVcnt=0;
         double pi[n];
-        for (int i=0;i<n;i++) pi[n] = inf;
+        for (int i=0;i<n;i++) pi[i] = inf;
         for (int i=0;i<n;i++) U[i] = i+1;
         U[n-1] = -1;
-        Uptr = U
+        Uptr = 0;
         int j = k;
         while (true){
             SV[SVcnt++] = j; 
-            if (varrho[j] < n && get(n,j-v[j] == 0)){
+            if (varrho[j] < n && get(n,j)-v[j] == 0){
                 zi = n; zj = j;
                 return ;
             }
-            for (int i= Uptr, nxt = U[i]; i!=-1;i = nxt, nxt = U[i])
+            for (int i= Uptr, prev = -1; i!=-1;prev = i, i = U[i])
                 if (get(i,j) - u[i] - v[j] < pi[i]) {
                     pred[i] = j; 
                     pi[i] = get(i,j) - u[i] - v[i];
@@ -36,6 +38,7 @@ class Assign{
                             return; 
                         }
                         if (Uptr == i) Uptr = U[i];
+                        if (prev != -1) U[prev] = U[i];
                         U[i] = LUptr;
                         LUptr = i;
                     }
@@ -44,31 +47,36 @@ class Assign{
                 double delta_eps = inf, delta_s = inf, delta = inf;
                 int l = -1;
                 for (int i = 0; i<SVcnt;i++) 
-                    if (get(n+1, SV[i]) - v[SV[i]] < delta_eps) {
-                        delta_eps = get(n+1, SV[i]) - v[SV[i]] ;
+                    if (get(n, SV[i]) - v[SV[i]] < delta_eps) {
+                        delta_eps = get(n, SV[i]) - v[SV[i]] ;
                         l = SV[i];
                     }
                 for (int i= Uptr, nxt = U[i]; i!=-1;i = nxt, nxt = U[i])
-                    delta_s = min(delta_s, pi[i]);
-                delta = min(delta_s, delta_eps);
+                    delta_s = std::min(delta_s, pi[i]);
+                delta = std::min(delta_s, delta_eps);
                 for (int i = 0; i<SVcnt;i++) 
                     v[SV[i]] += delta;
-                for (int i= LUptr, nxt = U[i]; i!=-1;i = nxt, nxt = U[i])
+                for (int i= LUptr; i!=-1;i = U[i])
                     u[i] -= delta;
-                for (int i= SUptr, nxt = U[i]; i!=-1;i = nxt, nxt = U[i])
+                for (int i= SUptr; i!=-1;i = U[i])
                     u[i] -= delta;
                 if (delta_eps <= delta_s) {
                     zi = n;
                     zj = l;
                     return ;
                 }
-                for (int i= Uptr, nxt = U[i]; i!=-1;i = nxt, nxt = U[i]){
+                for (int i= Uptr, prev = -1; i!=-1;prev = i, i = U[i]){
                     pi[i] -= delta;
-                    if (pi[i] == 0) 
-                        if (rho[i] != -1) {
+                    if (pi[i] == 0) {
+                        if (rho[i] == -1 or rho[i]==m) {
                             zi = i; zj = -1; 
                             return ;
                         }
+                        if (Uptr == i) Uptr = U[i];
+                        if (prev != -1) U[prev] = U[i];
+                        U[i] = LUptr;
+                        LUptr = i;
+                    }
                 }
             }
             if (LUptr!=-1) {
@@ -81,13 +89,13 @@ class Assign{
         }
     }
     public:
-    Augment(const double *c, const int&n, const int &m,
-            const int *rho, const int *varrho, 
-            const double *u, const double *v
+    Assign(const double *c, const int&n, const int &m,
+            int *const rho, int * const varrho, 
+            double *const u, double *const v
             ):
-        n(n),m(m),rho(rho),varrho(varrho),u(u),v(v){}
+        n(n),m(m),rho(rho),varrho(varrho),u(u),v(v),C(c){}
     void assignCols(){
-        int *pred = int[n+1];
+        int pred[n+1];
         for (int k=0; k<m;k++) {
             if (varrho[k] == -1) {
                 int i,j,r;
@@ -106,63 +114,61 @@ class Assign{
             }
         }
     }
-}
+};
 class LSAPE{
     int n, m;
-    int *rho, *varrho;
-    double *u, *v;
     const double *C;// a array with (n+1)x(m+1) 
-    lsape(const double *c, const int &n, const int &m):n(n),m(m),c(c){
-        rho = new int[n];
-        varrho = new int[m];
-        u = new double[n+1];
-        v = new double[m+1];
-    }
-    double get(i,j){
+    double get(int i,int j){
         return C[i*(m+1)+j];
     }
-    void PreProcessing(){// remeber that u[n] and v[m] is undefine
-        const int n = rows-1, m = cols-1;
+    void PreProcessing(int * const rho, int * const varrho){
+        u[n] = v[m] = 0;
         for (int i=0;i<n;i++) {
             u[i] = inf;
-            for (int j=0;j<cols;j++) 
+            for (int j=0;j<=m;j++) 
                 if (u[i] > get(i,j)) u[i] = get(i,j);
             rho[i]=-1;
         }
         for (int j=0;j<m;j++) {
-            for (int i=0;i<rows;i++) 
-                if (v[j] > get(i,j) - u[i]) v[i] = get(i,j) - u[i];
+            v[j] = inf;
+            for (int i=0;i<=n;i++) 
+                if (v[j] > get(i,j) - u[i]) v[j] = get(i,j) - u[i];
             varrho[j] = -1;
         }
-        for (int i=0;i<n;i++) 
+        for (int i=0;i<n;i++) {
             for (int j=0;j<m;j++) 
-                if (rho[i] < 0 && varrho[j] < 0 && get(i,j) == u[i] + v[j]){
+                if (varrho[j] < 0 && get(i,j) == u[i] + v[j]){
                     rho[i] = j;
                     varrho[j] = i;
                     break;
                 }
-        for (int i = 0; i<n; i++)
+        }
+        for (int i=0;i<n;i++) 
             if (rho[i] < 0 && get(i,m) == u[i]) {
                 rho[i] = m; 
             }
         for (int j = 0;j<m;j++) 
-            if (varrho[i] < 0 && get(n,j) == v[j]) {
+            if (varrho[j] < 0 && get(n,j) == v[j]) {
                 varrho[j] = n;
             }
     }
     public:
-    lsape(const double *c, const int &n, const int &m):n(n),m(m),c(c){
-        rho = new int[n];
-        varrho = new int[m];
+    double *u, *v;
+    LSAPE(double *const c, const int &n, const int &m):n(n),m(m),C(c){
         u = new double[n+1];
         v = new double[m+1];
     }
-    void hungarianLSAPE(int *rho, int *varrho) {
-        int nass = 0;
-        int mass = 0;
-        pre-process();
-        Assign(C, n, m, rho, varrho, u, v).assignCols();
-        Assign(inv(C, V+1, m+1), m, n, varrho, rho, v, u).assignCols();
+    ~LSAPE(){
+        delete[] u;
+        delete[] v;
     }
-}
+    void hungarianLSAPE(int *rho , int *varrho) {
+        PreProcessing(rho, varrho);
+        Assign(C, n, m, rho, varrho, u, v).assignCols();
+        double *V = inv(C, n+1, m+1);
+        Assign(V, m, n, varrho, rho, v, u).assignCols();
+        delete[] V;
+        return;
+    }
+};
 #endif 

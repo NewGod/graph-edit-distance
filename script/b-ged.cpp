@@ -2,7 +2,7 @@
 #include<cstdio>
 #include<iostream>
 #include<algorithm>
-#include<lsape.h>
+#include"BipartiteGraphEditDistance.h"
 #include<sstream>
 #include<unistd.h>
 
@@ -57,21 +57,26 @@ struct Options * parseOptions(int argc, char** argv){
   return options;
 }
 
-int n,m;
 int main(int argc, char **argv){
-    scanf("%d %d\n",&n,&m);
-    double *c = new double[(n+1)*(m+1)];
-    for (int i=0;i<=n;i++)
-        for (int j=0;j<=m;j++) scanf("%lf\n",&c[i*(m+1)+j]);
-    LSAPE solve = LSAPE(c, n, m);
-    int *rho = new int[n], *varrho = new int[m];
-    solve.hungarianLSAPE(rho, varrho);
-    for (int i=0;i<=n;i++) printf("%lf ",solve.u[i]);
-    puts("");
-    for (int i=0;i<=m;i++) printf("%lf ",solve.v[i]);
-    puts("");
-    for (int i=0;i<n;i++) printf("%d ",rho[i]);
-    puts("");
-    for (int i=0;i<m;i++) printf("%d ",varrho[i]);
+    struct Options * options = parseOptions(argc, argv);  
+    CostFunction *cf = new CostFunction(options->NodeSubCost,options->NodeDelCost,options->NodeDelCost,options->EdgeSubCost, options->EdgeDelCost, options->EdgeDelCost);
+    Graph *g1 = new Graph(options->dataset1_file.c_str());
+    cout<<options->dataset2_file.c_str()<<endl;
+    
+    Graph *g2 = new Graph(options->dataset2_file.c_str());
+    BipartiteGraphEditDistance *solver = new BipartiteGraphEditDistance(cf);
+
+    int n = g1->node_num, m = g2->node_num;
+    int* g1_to_g2 = new int[n+1], *g2_to_g1 = new int[m+1];
+    double time = solver->getOptimalMapping(g1,g2,g1_to_g2,g2_to_g1);
+    printf("%d %d\n",g1->node_num, g2->node_num);
+
+    cout<<"2"<<endl;
+    cout<<time<<endl;
+    for (int i=0;i<n;i++) {
+        if (g1_to_g2[i] != m) cout<<g1_to_g2[i]+1<<' ';
+        else cout<<-1<<endl;
+    }
+    
     return 0;
 }
